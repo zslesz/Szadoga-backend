@@ -1,4 +1,4 @@
-# main.py
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
@@ -8,20 +8,29 @@ from uld_packing_core.packer import BinPacker3D
 from uld_packing_core.solver import WeightAndBalanceEngine
 from database import models
 from database.database import engine
+from uld_packing_core.init_db import init_test_data
+
+# Élettartam-kezelő (lifespan) az automatikus lefutáshoz
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Szerver indulása: Adatbázis inicializálás ellenőrzése...")
+    init_test_data()
+    yield
+    print("Szerver leállítása...")
 
 app = FastAPI(
     title="ULD Packing Optimizer API",
     description="Szakdolgozati REST API a 3D Bin Packing algoritmushoz",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan  # Itt adjuk át a lifespan függvényt
 )
 
+# Adatbázis táblák létrehozása (ha még nem léteznének)
 models.Base.metadata.create_all(bind=engine)
-
 
 class OptimizeRequest(BaseModel):
     container: Container
     items: List[Item]
-
 
 class OptimizeResponse(BaseModel):
     placed_items: List[PlacedItem]
@@ -29,7 +38,6 @@ class OptimizeResponse(BaseModel):
     utilization_pct: float
     cog_metrics: dict
     is_cog_valid: bool
-
 
 @app.post("/api/v1/optimize", response_model=OptimizeResponse)
 def optimize_packing(request: OptimizeRequest):
