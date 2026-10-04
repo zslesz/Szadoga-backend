@@ -1,10 +1,9 @@
 version: '3.8'
 
 services:
+  # 1. Az Adatbázis konténer
   db:
-    image: postgres:15-alpine
-    container_name: uld_postgres_db
-    restart: always
+    image: postgres:15
     environment:
       POSTGRES_USER: uld_user
       POSTGRES_PASSWORD: uld_password
@@ -13,6 +12,20 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  # 2. A FastAPI Backend konténer
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://uld_user:uld_password@db:5432/uld_db
+    depends_on:
+      - db
+    volumes:
+      # Ez a trükk szinkronizálja a te mappádat a konténerrel.
+      # Ha módosítod a Python kódot, azonnal frissül a konténerben is!
+      - .:/app
 
 volumes:
   postgres_data:
