@@ -1,13 +1,16 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from uld_packing_core.models import Item, Container, PlacedItem
 from uld_packing_core.packer import BinPacker3D
 from uld_packing_core.solver import WeightAndBalanceEngine
 from database import models
-from database.database import engine
+from database.database import engine, get_db
+from database.models import DBContainer
 from uld_packing_core.init_db import init_test_data
 
 # Élettartam-kezelő (lifespan) az automatikus lefutáshoz
@@ -23,6 +26,14 @@ app = FastAPI(
     description="Szakdolgozati REST API a 3D Bin Packing algoritmushoz",
     version="1.0.0",
     lifespan=lifespan  # Itt adjuk át a lifespan függvényt
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Adatbázis táblák létrehozása (ha még nem léteznének)
@@ -61,3 +72,8 @@ def optimize_packing(request: OptimizeRequest):
         cog_metrics=cog_metrics,
         is_cog_valid=valid
     )
+
+@app.get("/api/v1/containers", response_model=List[Container])
+def get_all_containers(db: Session = Depends(get_db)):
+    """Lekérdezi az összes elérhető konténert az adatbázisból."""
+    return db.query(DBContainer).all()
