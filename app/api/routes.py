@@ -1,0 +1,53 @@
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from typing import List
+from sqlalchemy.orm import Session
+
+from app.schemas.schema import Item, Container, PlacedItem
+from app.services.packer import BinPacker3D
+from app.services.solver import WeightAndBalanceEngine
+from app.database.database import get_db
+from app.database.models import DBContainer
+
+# Itt definiáljuk a közös útvonal-előtagot
+router = APIRouter(prefix="/api/v1")
+
+# Tipp: Ezeket a Pydantic modelleket később áthelyezheted az app/schemas/schema.py fájlba is
+class OptimizeRequest(BaseModel):
+    container: Container
+    items: List[Item]
+
+class OptimizeResponse(BaseModel):
+    placed_items: List[PlacedItem]
+    unpacked_items: List[Item]
+    utilization_pct: float
+    cog_metrics: dict
+    is_cog_valid: bool
+
+@router.post("/optimize", response_model=OptimizeResponse)
+def optimize_packing(request: OptimizeRequest):
+    """Bekér egy konténert és egy listányi dobozt, majd visszadja az optimalizált pakolási tervet."""
+    packer = BinPacker3D(request.container)
+    placed, unpacked = packer.pack(request.items)
+
+    # Súlypont ellenőrzés
+    valid, cog_metrics = WeightAndBalanceEngine.is_cog_valid(request.container, placed)
+
+    # Térfogat-kihasználtság
+    total_packed_volume = sum(p.item.volume for p in placed)
+    utilization_pct = 0.0
+    if request.container.max_volume > 0:
+        utilization_pct = round((total_packed_volume / request.container.max_volume) * 100, 2)
+
+    return OptimizeResponse(
+        placed_items=placed,
+        unpacked_items=unpacked,
+        utilization_pct=utilization_pct,
+        cog_metrics=cog_metrics,
+        is_cog_valid=valid
+    )
+
+@router.get("/containers", response_model=List[Container])
+def get_all_containers(db: Session = Depends(get_db)):
+    """Lekérdezi az összes elérhető konténert az adatbázisból."""
+    return db.query(DBContainer).all()

@@ -1,6 +1,6 @@
-from uld_packing_core.models import Item, Container
-from uld_packing_core.packer import BinPacker3D
-from uld_packing_core.solver import WeightAndBalanceEngine
+from app.schemas.schema import Item, Container
+from app.services.packer import BinPacker3D
+from app.services.solver import WeightAndBalanceEngine
 
 def run_contour_test():
     uld_container = Container(

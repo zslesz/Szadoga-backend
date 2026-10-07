@@ -1,6 +1,6 @@
-from sqlalchemy import Column, String, Float, Integer, ForeignKey, Table
+from sqlalchemy import Column, String, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from database.database import Base
+from app.database.database import Base
 
 aircraft_container_association = Table(
     'aircraft_container_compatibility',

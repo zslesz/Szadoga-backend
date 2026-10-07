@@ -1,5 +1,5 @@
-from database.database import SessionLocal
-from database.models import DBContainer, DBAircraft
+from app.database.database import SessionLocal
+
 
 def add_containers():
     db = SessionLocal()

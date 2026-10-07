@@ -1,8 +1,6 @@
 # packer.py
-from typing import List, Tuple, Optional
-from uld_packing_core.models import Item, Container, PlacedItem
-from uld_packing_core.solver import WeightAndBalanceEngine
-import itertools
+from typing import List
+from app.schemas.schema import Container, PlacedItem
 
 """3D Bin Packing algoritmus megvalósítása First-Fit Decreasing (FFD) heurisztikával."""
 class BinPacker3D:

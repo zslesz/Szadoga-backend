@@ -1,5 +1,5 @@
-from typing import List, Tuple, Dict, Any
-from uld_packing_core.models import Item, Container, PlacedItem
+from typing import List, Tuple, Dict
+from app.schemas.schema import Container, PlacedItem
 
 class WeightAndBalanceEngine:
     @staticmethod

@@ -1,6 +1,6 @@
 # init_db.py
-from database.database import SessionLocal, engine
-from database.models import Base, DBAircraft, DBContainer
+from app.database.database import SessionLocal, engine
+from app.database.models import Base, DBAircraft, DBContainer
 
 
 def init_test_data():
