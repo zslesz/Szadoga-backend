@@ -13,11 +13,16 @@ aircraft_container_association = Table(
 
 class DBAircraft(Base):
     __tablename__ = 'aircrafts'
+
     id = Column(String, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     max_cargo_weight = Column(Float)
 
-    # JAVÍTVA: coontainers -> containers
+    # EZ A KÉT SOR HIÁNYZIK:
+    body_type = Column(String, nullable=True)
+    max_range_km = Column(Float, nullable=True)
+
+    # Kapcsolat a konténerek felé (ez már megvan nálad)
     compatible_containers = relationship(
         "DBContainer",
         secondary=aircraft_container_association,

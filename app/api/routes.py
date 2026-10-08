@@ -9,6 +9,8 @@ from app.services.solver import WeightAndBalanceEngine
 from app.database.database import get_db
 from app.database.models import DBContainer
 
+from ..database.models import DBContainer, DBAircraft, aircraft_container_association
+
 # Itt definiáljuk a közös útvonal-előtagot
 router = APIRouter(prefix="/api/v1")
 
@@ -51,3 +53,34 @@ def optimize_packing(request: OptimizeRequest):
 def get_all_containers(db: Session = Depends(get_db)):
     """Lekérdezi az összes elérhető konténert az adatbázisból."""
     return db.query(DBContainer).all()
+
+
+@router.get("/aircrafts")
+def get_all_aircrafts(db: Session = Depends(get_db)):
+    """Lekérdezi az összes elérhető repülőgépet az adatbázisból."""
+    return db.query(DBAircraft).all()
+
+
+@router.get("/aircrafts/{aircraft_id}/containers")
+def get_compatible_containers(aircraft_id: str, db: Session = Depends(get_db)):
+    """Lekérdezi egy adott géphez tartozó kompatibilis konténereket és a maximális darabszámukat."""
+
+    compatible_data = db.query(
+        DBContainer.id,
+        DBContainer.name,
+        aircraft_container_association.c.max_quantity
+    ).join(
+        aircraft_container_association,
+        DBContainer.id == aircraft_container_association.c.container_id
+    ).filter(
+        aircraft_container_association.c.aircraft_id == aircraft_id
+    ).all()
+
+    return [
+        {
+            "container_id": row.id,
+            "name": row.name,
+            "max_quantity": row.max_quantity
+        }
+        for row in compatible_data
+    ]
