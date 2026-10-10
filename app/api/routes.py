@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+
 
 from app.schemas.schema import Item, Container, PlacedItem
 from app.services.packer import BinPacker3D
@@ -58,7 +59,8 @@ def get_all_containers(db: Session = Depends(get_db)):
 @router.get("/aircrafts")
 def get_all_aircrafts(db: Session = Depends(get_db)):
     """Lekérdezi az összes elérhető repülőgépet az adatbázisból."""
-    return db.query(DBAircraft).all()
+    return db.query(DBAircraft).options(joinedload(DBAircraft.compatible_containers)).all()
+
 
 
 @router.get("/aircrafts/{aircraft_id}/containers")

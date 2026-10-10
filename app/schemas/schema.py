@@ -58,3 +58,31 @@ class PlacedItem(BaseModel):
         cy = self.y + (self.h / 2.0)
         cz = self.z + (self.d / 2.0)
         return cx, cy, cz
+
+
+class ContainerResponse(BaseModel):
+    id: str  # vagy int
+    name: str
+
+    # Ezt a három sort adtuk hozzá:
+    max_gross_weight: Optional[float] = None
+    tare_weight: Optional[float] = None
+    volume: Optional[float] = None
+
+    class Config:
+        from_attributes = True
+
+
+
+class AircraftResponse(BaseModel):
+    id: str
+    name: str
+    max_cargo_weight: Optional[float] = None
+    body_type: Optional[str] = None
+    range_km: Optional[float] = None  # vagy ahogy nálad hívják
+
+    # EZ A LÉNYEG: Itt mondjuk meg a FastAPI-nak, hogy küldje át a listát!
+    compatible_containers: List[ContainerResponse] = []
+
+    class Config:
+        from_attributes = True
