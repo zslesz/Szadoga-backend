@@ -16,25 +16,29 @@ def init_test_data():
         containers = [
             {
                 "id": "ULD-AKE", "name": "Standard AKE (LD3) Contoured",
-                "width": 156.0, "height": 163.0, "depth": 153.0, "max_weight": 1588.0,
+                "width": 156.0, "height": 163.0, "depth": 153.0, "max_gross_weight": 1588.0,
+                "tare_weight": 82.0,"volume": 4.3,
                 "base_width": 110.0, "contour_height": 45.0,
                 "cog_target_x": 78.0, "cog_target_y": 81.5, "cog_target_z": 76.5
             },
             {
                 "id": "ULD-ALF", "name": "Standard ALF (LD6) Double-Contoured",
-                "width": 317.0, "height": 163.0, "depth": 153.0, "max_weight": 3175.0,
+                "width": 317.0, "height": 163.0, "depth": 153.0, "max_gross_weight": 3175.0,
+                "tare_weight": 230.0, "volume": 9.1,
                 "base_width": 220.0, "contour_height": 45.0,
                 "cog_target_x": 158.5, "cog_target_y": 81.5, "cog_target_z": 76.5
             },
             {
                 "id": "ULD-PMC", "name": "PMC Main Deck Pallet (Rectangular)",
-                "width": 317.0, "height": 244.0, "depth": 243.0, "max_weight": 6800.0,
+                "width": 317.0, "height": 244.0, "depth": 243.0, "max_gross_weight": 6800.0,
+                "tare_weight": 120.0, "volume": 23.0,
                 "base_width": 317.0, "contour_height": 0.0,
                 "cog_target_x": 158.5, "cog_target_y": 122.0, "cog_target_z": 121.5
             },
             {
                 "id": "ULD-AKH", "name": "Standard AKH (LD3-45W) for A321",
-                "width": 153.4, "height": 114.3, "depth": 156.2, "max_weight": 1134.0,
+                "width": 153.4, "height": 114.3, "depth": 156.2, "max_gross_weight": 1134.0,
+                "tare_weight": 92.0, "volume": 3.7,
                 "base_width": 153.4, "contour_height": 0.0,
                 "cog_target_x": 76.7, "cog_target_y": 57.1, "cog_target_z": 78.1
             }

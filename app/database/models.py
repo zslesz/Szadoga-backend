@@ -43,8 +43,9 @@ class DBContainer(Base):
     base_width = Column(Float, nullable=True)
     contour_height = Column(Float, default=0.0)
 
-    # JAVÍTVA: weight -> max_weight
-    max_weight = Column(Float)
+    max_gross_weight = Column(Float)
+    tare_weight = Column(Float)
+    volume = Column(Float)
 
     cog_target_x = Column(Float)
     cog_target_y = Column(Float)
