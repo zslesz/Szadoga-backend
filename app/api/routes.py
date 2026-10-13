@@ -8,7 +8,9 @@ from app.schemas.schema import Item, Container, PlacedItem
 from app.services.packer import BinPacker3D
 from app.services.solver import WeightAndBalanceEngine
 from app.database.database import get_db
-from app.database.models import DBContainer
+from app.database.models import DBContainer, FuelProfile
+from app.services.fuelCalculator import FuelCalculator
+
 
 from ..database.models import DBContainer, DBAircraft, aircraft_container_association
 
@@ -26,6 +28,11 @@ class OptimizeResponse(BaseModel):
     utilization_pct: float
     cog_metrics: dict
     is_cog_valid: bool
+
+class FuelRequest(BaseModel):
+    aircraft_id: str
+    distance_km: float
+    payload_kg: float
 
 @router.post("/optimize", response_model=OptimizeResponse)
 def optimize_packing(request: OptimizeRequest):
@@ -86,3 +93,29 @@ def get_compatible_containers(aircraft_id: str, db: Session = Depends(get_db)):
         }
         for row in compatible_data
     ]
+
+
+@router.post("/fuel/calculate")
+def calculate_flight_fuel(request: FuelRequest, db: Session = Depends(get_db)):
+    # 1. Kikeressük az adatbázisból az adott gép fogyasztási adatait
+    profile = db.query(FuelProfile).filter(FuelProfile.aircraft_id == request.aircraft_id).first()
+
+    if not profile:
+        # Ha még nincs az adatbázisban, adunk egy biztonsági alapértelmezett értéket
+        class DefaultProfile:
+            speed_kmh = 850
+            base_burn_kgh = 4000
+            penalty_per_tonne = 20
+            reserve_fuel_kg = 3000
+
+        profile = DefaultProfile()
+
+    # 2. Lefuttatjuk a fuel_calculator.py-t
+    result = FuelCalculator.calculate(
+        distance_km=request.distance_km,
+        payload_kg=request.payload_kg,
+        profile=profile
+    )
+
+    # 3. Visszaküldjük a Reactnek a kész adatokat
+    return result

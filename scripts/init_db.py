@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import insert, delete
 from app.database.database import SessionLocal, engine
-from app.database.models import Base, DBAircraft, DBContainer, aircraft_container_association
+from app.database.models import Base, DBAircraft, DBContainer, aircraft_container_association, FuelProfile
 
 
 def init_test_data():
@@ -12,7 +12,6 @@ def init_test_data():
     print("=== Adatbázis inicializálása teszt adatokkal ===")
 
     try:
-        # 1. Konténerek (Containers) - A TE profi kontúr adataiddal + az AKH az Airbusoknak!
         containers = [
             {
                 "id": "ULD-AKE", "name": "Standard AKE (LD3) Contoured",
@@ -39,7 +38,7 @@ def init_test_data():
                 "id": "ULD-AKH", "name": "Standard AKH (LD3-45W) for A321",
                 "width": 153.4, "height": 114.3, "depth": 156.2, "max_gross_weight": 1134.0,
                 "tare_weight": 92.0, "volume": 3.7,
-                "base_width": 153.4, "contour_height": 0.0,
+                "base_width": 153.4, "contour_height": 45.0,
                 "cog_target_x": 76.7, "cog_target_y": 57.1, "cog_target_z": 78.1
             }
         ]
@@ -51,7 +50,6 @@ def init_test_data():
                 print(f"[+] Konténer hozzáadva: {c_data['id']}")
         db.commit()
 
-        # 2. Repülőgépek (Aircrafts) - A te 8 db géped az Excelből!
         aircrafts = [
             {"id": "B747-400F", "name": "Boeing 747-400F / 747-8F", "max_cargo_weight": 134000.0,
              "body_type": "wide-body", "max_range_km": 8334.0},
@@ -78,7 +76,6 @@ def init_test_data():
                 print(f"[+] Repülőgép hozzáadva: {ac_data['id']}")
         db.commit()
 
-        # 3. Kapcsolatok (Many-to-Many) és a max_quantity beállítása!
         print("[*] Kompatibilitási mátrix építése...")
         db.execute(delete(aircraft_container_association))  # Töröljük a régit, hogy ne duplikáljunk
 
@@ -102,6 +99,32 @@ def init_test_data():
         ]
 
         db.execute(insert(aircraft_container_association).values(associations))
+        db.commit()
+
+
+        # 4. Üzemanyag profilok (Fuel Profiles) felvétele
+        print("[*] Üzemanyag-fogyasztási profilok (Fuel Profiles) betöltése...")
+        fuel_profiles = [
+            {"aircraft_id": "B747-400F", "speed_kmh": 910, "base_burn_kgh": 8000, "penalty_per_tonne": 35, "reserve_fuel_kg": 7000},
+            {"aircraft_id": "B777F", "speed_kmh": 900, "base_burn_kgh": 5500, "penalty_per_tonne": 30, "reserve_fuel_kg": 5400},
+            {"aircraft_id": "A330-300P2F", "speed_kmh": 870, "base_burn_kgh": 4800, "penalty_per_tonne": 25, "reserve_fuel_kg": 4500},
+            {"aircraft_id": "B767-300F", "speed_kmh": 850, "base_burn_kgh": 4000, "penalty_per_tonne": 20, "reserve_fuel_kg": 3500},
+            {"aircraft_id": "A300-600F", "speed_kmh": 840, "base_burn_kgh": 4200, "penalty_per_tonne": 22, "reserve_fuel_kg": 3800},
+            {"aircraft_id": "A330-200F", "speed_kmh": 870, "base_burn_kgh": 4600, "penalty_per_tonne": 24, "reserve_fuel_kg": 4500},
+            {"aircraft_id": "A321XLR", "speed_kmh": 830, "base_burn_kgh": 2200, "penalty_per_tonne": 12, "reserve_fuel_kg": 2000},
+            {"aircraft_id": "A321NEO", "speed_kmh": 830, "base_burn_kgh": 2100, "penalty_per_tonne": 12, "reserve_fuel_kg": 1800},
+        ]
+
+        for fp_data in fuel_profiles:
+            existing = db.query(FuelProfile).filter(FuelProfile.aircraft_id == fp_data["aircraft_id"]).first()
+            if not existing:
+                db.add(FuelProfile(**fp_data))
+                print(f"[+] FuelProfile hozzáadva: {fp_data['aircraft_id']}")
+            else:
+                # Opcionális: Ha frissíteni szeretnéd a már meglévő adatokat az új értékekre
+                for key, value in fp_data.items():
+                    setattr(existing, key, value)
+                print(f"[*] FuelProfile frissítve: {fp_data['aircraft_id']}")
         db.commit()
 
         print("=== Inicializálás sikeresen befejeződött! ===")

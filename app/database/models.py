@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey, Table
+from sqlalchemy import Column, String, Float, ForeignKey, Table, Integer
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -59,3 +59,14 @@ class DBContainer(Base):
         secondary=aircraft_container_association,
         back_populates="compatible_containers"
     )
+
+class FuelProfile(Base):
+    __tablename__ = 'fuel_profiles'
+    id = Column(Integer, primary_key=True, index=True)
+    aircraft_id = Column(String, ForeignKey('aircrafts.id'), unique=True)
+
+    speed_kmh = Column(Integer, default=900)
+    base_burn_kgh = Column(Integer, default=5500)
+    penalty_per_tonne = Column(Integer, default=30)
+    reserve_fuel_kg = Column(Integer, default=5400)
+
