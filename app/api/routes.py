@@ -1,21 +1,47 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List
 from sqlalchemy.orm import Session, joinedload
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
 
 
 from app.schemas.schema import Item, Container, PlacedItem
 from app.services.packer import BinPacker3D
 from app.services.solver import WeightAndBalanceEngine
 from app.database.database import get_db
-from app.database.models import DBContainer, FuelProfile
+from app.database.models import DBContainer, FuelProfile, User
 from app.services.fuelCalculator import FuelCalculator
+from app.services.auth import verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 from ..database.models import DBContainer, DBAircraft, aircraft_container_association
 
 # Itt definiáljuk a közös útvonal-előtagot
 router = APIRouter(prefix="/api/v1")
+
+@router.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # 1. Felhasználó keresése az adatbázisban
+    user = db.query(User).filter(User.username == form_data.username).first()
+
+    # 2. Jelszó ellenőrzése
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Hibás felhasználónév vagy jelszó!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # 3. Token generálása (figyelve, hogy az oszlop neve 'roles' az adatbázisban)
+    user_role = getattr(user, 'roles', getattr(user, 'role', 'viewer'))
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username, "role": user_role},
+        expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer", "role": user_role}
 
 # Tipp: Ezeket a Pydantic modelleket később áthelyezheted az app/schemas/schema.py fájlba is
 class OptimizeRequest(BaseModel):
@@ -119,3 +145,4 @@ def calculate_flight_fuel(request: FuelRequest, db: Session = Depends(get_db)):
 
     # 3. Visszaküldjük a Reactnek a kész adatokat
     return result
+

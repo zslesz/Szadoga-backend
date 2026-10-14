@@ -1,7 +1,13 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import insert, delete
+from passlib.context import CryptContext
 from app.database.database import SessionLocal, engine
-from app.database.models import Base, DBAircraft, DBContainer, aircraft_container_association, FuelProfile
+from app.database.models import Base, DBAircraft, DBContainer, aircraft_container_association, FuelProfile, User
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated=['auto'])
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
 def init_test_data():
@@ -12,6 +18,32 @@ def init_test_data():
     print("=== Adatbázis inicializálása teszt adatokkal ===")
 
     try:
+        test_users = [
+            {
+                'username': 'Admin',
+                'hashed_password': get_password_hash('admin'),
+                'role': 'admin',
+            },
+            {
+                'username': 'Cargo Agent',
+                'hashed_password': get_password_hash('cargoagent'),
+                'role': 'cargoagent',
+            },
+            {
+                'username': 'Loadmaster',
+                'hashed_password': get_password_hash('loadmaster'),
+                'role': 'loadmaster',
+            }
+        ]
+
+        for user_data in test_users:
+            existing = db.query(User).filter(User.username == user_data['username']).first()
+            if not existing:
+                db.add(User(**user_data))
+                print(f"[+] Felhasználó hozzáadva: {user_data['username']} ({user_data['role']})")
+        db.commit()
+
+
         containers = [
             {
                 "id": "ULD-AKE", "name": "Standard AKE (LD3) Contoured",

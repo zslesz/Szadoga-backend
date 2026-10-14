@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey, Table, Integer
+from sqlalchemy import Column, String, Float, ForeignKey, Table, Integer, Boolean
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -69,4 +69,13 @@ class FuelProfile(Base):
     base_burn_kgh = Column(Integer, default=5500)
     penalty_per_tonne = Column(Integer, default=30)
     reserve_fuel_kg = Column(Integer, default=5400)
+
+
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    role = Column(String, default="viewer")
+    is_active = Column(Boolean, default=True)
 
