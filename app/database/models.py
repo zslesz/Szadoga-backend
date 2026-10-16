@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey, Table, Integer, Boolean
+from sqlalchemy import Column, String, Float, ForeignKey, Table, Integer, Boolean, Text
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -78,4 +78,35 @@ class User(Base):
     hashed_password = Column(String)
     role = Column(String, default="viewer")
     is_active = Column(Boolean, default=True)
+
+
+class CargoOrder(Base):
+    __tablename__ = "cargo_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_name = Column(String(100), default="Vendég Ügyfél")
+    distance_km = Column(Float, default=0.0)
+    items_json = Column(Text, nullable=False)
+    status = Column(String(20), default="pending")
+
+    # ÚJ: Melyik konkrét gép lett hozzárendelve ehhez a rendeléshez? (Lehet null, ha még nincs)
+    fleet_id = Column(Integer, ForeignKey("fleet.id"), nullable=True)
+
+    # Kapcsolat a flottához
+    assigned_fleet = relationship("Fleet", back_populates="orders")
+
+
+class Fleet(Base):
+    __tablename__ = "fleet"
+
+    id = Column(Integer, primary_key=True, index=True)
+    registration = Column(String(20), unique=True, index=True)  # Lajstromjel, pl: HA-LQK
+    status = Column(String(20), default="Available")  # Available, In Transit, Maintenance
+
+    # Hivatkozás a sablon (típus) repülőre
+    aircraft_type_id = Column(String(50), ForeignKey("aircrafts.id"))
+
+    # Kapcsolatok
+    aircraft_type = relationship("DBAircraft")
+    orders = relationship("CargoOrder", back_populates="assigned_fleet")
 

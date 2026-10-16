@@ -25,14 +25,19 @@ def seed_users():
             "role": "admin"
         },
         {
-            "username": "Cargo Agent",
-            "hashed_password": get_password_hash("cargoagent"),
+            "username": "Agent",
+            "hashed_password": get_password_hash("agent"),
             "role": "cargo agent"
         },
         {
             "username": "Loadmaster",
             "hashed_password": get_password_hash("loadmaster"),
             "role": "loadmaster"
+        },
+        {
+            "username": "User",
+            "hashed_password": get_password_hash("user"),
+            "role": "user"
         }
     ]
 

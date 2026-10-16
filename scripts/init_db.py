@@ -18,60 +18,42 @@ def init_test_data():
     print("=== Adatbázis inicializálása teszt adatokkal ===")
 
     try:
-        test_users = [
-            {
-                'username': 'Admin',
-                'hashed_password': get_password_hash('admin'),
-                'role': 'admin',
-            },
-            {
-                'username': 'Cargo Agent',
-                'hashed_password': get_password_hash('cargoagent'),
-                'role': 'cargoagent',
-            },
-            {
-                'username': 'Loadmaster',
-                'hashed_password': get_password_hash('loadmaster'),
-                'role': 'loadmaster',
-            }
-        ]
-
-        for user_data in test_users:
-            existing = db.query(User).filter(User.username == user_data['username']).first()
-            if not existing:
-                db.add(User(**user_data))
-                print(f"[+] Felhasználó hozzáadva: {user_data['username']} ({user_data['role']})")
-        db.commit()
-
-
         containers = [
             {
-                "id": "ULD-AKE", "name": "Standard AKE (LD3) Contoured",
-                "width": 156.0, "height": 163.0, "depth": 153.0, "max_gross_weight": 1588.0,
-                "tare_weight": 82.0,"volume": 4.3,
-                "base_width": 110.0, "contour_height": 45.0,
-                "cog_target_x": 78.0, "cog_target_y": 81.5, "cog_target_z": 76.5
-            },
-            {
-                "id": "ULD-ALF", "name": "Standard ALF (LD6) Double-Contoured",
-                "width": 317.0, "height": 163.0, "depth": 153.0, "max_gross_weight": 3175.0,
-                "tare_weight": 230.0, "volume": 9.1,
-                "base_width": 220.0, "contour_height": 45.0,
-                "cog_target_x": 158.5, "cog_target_y": 81.5, "cog_target_z": 76.5
-            },
-            {
                 "id": "ULD-PMC", "name": "PMC Main Deck Pallet (Rectangular)",
-                "width": 317.0, "height": 244.0, "depth": 243.0, "max_gross_weight": 6800.0,
-                "tare_weight": 120.0, "volume": 23.0,
-                "base_width": 317.0, "contour_height": 0.0,
-                "cog_target_x": 158.5, "cog_target_y": 122.0, "cog_target_z": 121.5
+                "width": 317.5, "height": 243.8, "depth": 243.8, "max_gross_weight": 6804.0,
+                "tare_weight": 93.9, "volume": 18.8,
+                "base_width": 317.5, "contour_height": 0.0,
+                "cog_target_x": 158.75, "cog_target_y": 121.9, "cog_target_z": 121.9
             },
             {
-                "id": "ULD-AKH", "name": "Standard AKH (LD3-45W) for A321",
-                "width": 153.4, "height": 114.3, "depth": 156.2, "max_gross_weight": 1134.0,
-                "tare_weight": 92.0, "volume": 3.7,
+                "id": "ULD-AKE", "name": "Standard AKE (LD3) Contoured",
+                "width": 199.3, "height": 161.3, "depth": 153.4, "max_gross_weight": 1588.0,
+                "tare_weight": 54.0,"volume": 4.3,
+                "base_width": 156.1, "contour_height": 45.0,
+                "cog_target_x": 99.65, "cog_target_y": 80.65, "cog_target_z": 76.7
+            },
+            {
+                "id": "ULD-DQF", "name": "Standard DQF (LD8) Double-Contoured",
+                "width": 317.5, "height": 162.6, "depth": 153.4, "max_gross_weight": 2450.0,
+                "tare_weight": 127.0, "volume": 7.2,
+                "base_width": 243.8, "contour_height": 45.0,
+                "cog_target_x": 158.75, "cog_target_y": 81.3, "cog_target_z": 76.7
+            },
+
+            {
+                "id": "ULD-DPE", "name": "Standard DPE (LD2) Contoured",
+                "width": 156.2, "height": 162.6, "depth": 153.4, "max_gross_weight": 1225.0,
+                "tare_weight": 73.0, "volume": 3.5,
+                "base_width": 119.4, "contour_height": 45.0,
+                "cog_target_x": 78.1, "cog_target_y": 81.3, "cog_target_z": 76.7
+            },
+            {
+                "id": "ULD-AKH", "name": "Standard AKH (LD3-45W) Double-Contoured",
+                "width": 243.8, "height": 114.3, "depth": 156.2, "max_gross_weight": 1134.0,
+                "tare_weight": 88.0, "volume": 3.7,
                 "base_width": 153.4, "contour_height": 45.0,
-                "cog_target_x": 76.7, "cog_target_y": 57.1, "cog_target_z": 78.1
+                "cog_target_x": 121.9, "cog_target_y": 57.15, "cog_target_z": 78.1
             }
         ]
 
@@ -83,7 +65,7 @@ def init_test_data():
         db.commit()
 
         aircrafts = [
-            {"id": "B747-400F", "name": "Boeing 747-400F / 747-8F", "max_cargo_weight": 134000.0,
+            {"id": "B747-400F", "name": "Boeing 747-400F", "max_cargo_weight": 134000.0,
              "body_type": "wide-body", "max_range_km": 8334.0},
             {"id": "B777F", "name": "Boeing 777F", "max_cargo_weight": 102000.0, "body_type": "wide-body",
              "max_range_km": 9075.0},
@@ -112,21 +94,28 @@ def init_test_data():
         db.execute(delete(aircraft_container_association))  # Töröljük a régit, hogy ne duplikáljunk
 
         associations = [
-            # B747-400F (max 42 AKE, 30 PMC)
             {"aircraft_id": "B747-400F", "container_id": "ULD-AKE", "max_quantity": 42},
-            {"aircraft_id": "B747-400F", "container_id": "ULD-PMC", "max_quantity": 30},
-            # B777F (max 32 AKE, 27 PMC, ALF-ből fele annyi fér, mint AKE-ből)
+            {"aircraft_id": "B747-400F", "container_id": "ULD-PMC", "max_quantity": 39},
+
             {"aircraft_id": "B777F", "container_id": "ULD-AKE", "max_quantity": 32},
             {"aircraft_id": "B777F", "container_id": "ULD-PMC", "max_quantity": 27},
-            {"aircraft_id": "B777F", "container_id": "ULD-ALF", "max_quantity": 16},
-            # A330-300P2F
+
             {"aircraft_id": "A330-300P2F", "container_id": "ULD-AKE", "max_quantity": 32},
             {"aircraft_id": "A330-300P2F", "container_id": "ULD-PMC", "max_quantity": 26},
-            # A330-200F
+
+            {"aircraft_id": "B767-300F", "container_id": "ULD-PMC", "max_quantity": 24},
+            {"aircraft_id": "B767-300F", "container_id": "ULD-DQF", "max_quantity": 15},
+            {"aircraft_id": "B767-300F", "container_id": "ULD-DPE", "max_quantity": 30},
+
+            {"aircraft_id": "A300-600F", "container_id": "ULD-AKE", "max_quantity": 22},
+            {"aircraft_id": "A300-600F", "container_id": "ULD-PMC", "max_quantity": 15},
+
             {"aircraft_id": "A330-200F", "container_id": "ULD-AKE", "max_quantity": 26},
             {"aircraft_id": "A330-200F", "container_id": "ULD-PMC", "max_quantity": 22},
-            # Narrow bodies (A321) -> AKH-val kompatibilisek
+
+
             {"aircraft_id": "A321XLR", "container_id": "ULD-AKH", "max_quantity": 10},
+
             {"aircraft_id": "A321NEO", "container_id": "ULD-AKH", "max_quantity": 10},
         ]
 
